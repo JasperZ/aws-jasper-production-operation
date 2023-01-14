@@ -51,6 +51,14 @@ resource "aws_s3_bucket" "codepipeline_operation_artifacts" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "codepipeline_operation_artifacts" {
+  bucket = aws_s3_bucket.codepipeline_operation_artifacts.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
 
 resource "aws_codebuild_project" "operation_terraform_plan" {
   name           = "operation_terraform_plan"
