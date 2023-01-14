@@ -99,3 +99,18 @@ output "homelab_openstack_production_terraform_user" {
 
   sensitive = true
 }
+
+resource "aws_secretsmanager_secret" "homelab_openstack_production_terraform" {
+  name = "homelab_openstack_production_terraform"
+}
+
+resource "aws_secretsmanager_secret_version" "homelab_openstack_production_terraform" {
+  secret_id = aws_secretsmanager_secret.homelab_openstack_production_terraform.id
+
+  secret_string = jsonencode({
+    s3_bucket         = aws_s3_bucket.homelab_openstack_production_terraform_state.id
+    dynamodb_table    = aws_dynamodb_table.homelab_openstack_production_terraform_state_lock.name
+    access_key_id     = aws_iam_access_key.homelab_openstack_production_terraform.id
+    secret_access_key = aws_iam_access_key.homelab_openstack_production_terraform.secret
+  })
+}
