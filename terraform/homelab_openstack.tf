@@ -19,10 +19,9 @@ resource "aws_s3_bucket_versioning" "homelab_openstack_production_terraform_stat
 }
 
 resource "aws_dynamodb_table" "homelab_openstack_production_terraform_state_lock" {
-  name           = "homelab-production-tf-state-lock"
-  hash_key       = "LockID"
-  read_capacity  = 20
-  write_capacity = 20
+  name         = "homelab-production-tf-state-lock"
+  hash_key     = "LockID"
+  billing_mode = "PAY_PER_REQUEST"
 
   attribute {
     name = "LockID"
