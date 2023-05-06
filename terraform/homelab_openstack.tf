@@ -113,3 +113,61 @@ resource "aws_secretsmanager_secret_version" "homelab_openstack_production_terra
     secret_access_key = aws_iam_access_key.homelab_openstack_production_terraform.secret
   })
 }
+
+## sns for homelab production notifications
+resource "aws_sns_topic" "homelab_openstack_production_monitoring_notifications" {
+  name = "homelab_openstack_production_monitoring_notifications"
+}
+
+resource "aws_sns_topic_subscription" "homelab_openstack_production_monitoring_notifications_jasper" {
+  protocol  = "email"
+  endpoint  = "jasper.z@posteo.de"
+  topic_arn = aws_sns_topic.homelab_openstack_production_monitoring_notifications.arn
+}
+
+resource "aws_iam_user" "homelab_openstack_production_monitoring_notifications" {
+  name = "homelab_openstack_production_monitoring_notifications"
+}
+
+resource "aws_iam_access_key" "homelab_openstack_production_monitoring_notifications" {
+  user = aws_iam_user.homelab_openstack_production_monitoring_notifications.name
+}
+
+data "aws_iam_policy_document" "homelab_openstack_production_monitoring_notifications" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "sns:Publish",
+      "sns:GetTopicAttributes"
+    ]
+
+    resources = [
+      aws_sns_topic.homelab_openstack_production_monitoring_notifications.arn
+    ]
+  }
+}
+
+resource "aws_iam_policy" "homelab_openstack_production_monitoring_notifications" {
+  name   = "homelab_openstack_production_monitoring_notifications"
+  policy = data.aws_iam_policy_document.homelab_openstack_production_monitoring_notifications.json
+}
+
+resource "aws_iam_user_policy_attachment" "homelab_openstack_production_monitoring_notifications" {
+  user       = aws_iam_user.homelab_openstack_production_monitoring_notifications.name
+  policy_arn = aws_iam_policy.homelab_openstack_production_monitoring_notifications.arn
+}
+
+resource "aws_secretsmanager_secret" "homelab_openstack_production_monitoring_notifications" {
+  name = "homelab_openstack_production_monitoring_notifications"
+}
+
+resource "aws_secretsmanager_secret_version" "homelab_openstack_production_monitoring_notifications" {
+  secret_id = aws_secretsmanager_secret.homelab_openstack_production_monitoring_notifications.id
+
+  secret_string = jsonencode({
+    topic_arn         = aws_sns_topic.homelab_openstack_production_monitoring_notifications.arn
+    access_key_id     = aws_iam_access_key.homelab_openstack_production_monitoring_notifications.id
+    secret_access_key = aws_iam_access_key.homelab_openstack_production_monitoring_notifications.secret
+  })
+}
